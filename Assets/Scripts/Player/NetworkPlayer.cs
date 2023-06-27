@@ -7,6 +7,7 @@ using System;
 [RequireComponent(typeof(CharacterInputsHandler))]
 public class NetworkPlayer : NetworkBehaviour
 {
+    
     public static NetworkPlayer local { get; private set; }
     NicknameText _myNickName;
     [Networked(OnChanged = nameof(OnNicknameChanged))]
@@ -14,7 +15,10 @@ public class NetworkPlayer : NetworkBehaviour
     public event Action OnLeft = delegate { };
     public override void Spawned()
     {
+        
         _myNickName = NicknamesHandler.Instance.AddNickname(this);
+        var pos = GetComponent<Transform>().position;
+        Debug.Log(pos);
 
         Color skinColor = Color.white;
         if (Object.HasInputAuthority)
@@ -23,15 +27,27 @@ public class NetworkPlayer : NetworkBehaviour
 
             skinColor = Color.blue;
 
-            RPC_SetNickname("Player 1");
+            RPC_SetNickname(PlayerPrefs.GetString("PlayerNickname"));
+
         }
         else
         {
             skinColor = Color.red;
+            //pos = GameManager.Instance.secondPlayerSpawn.position;
         }
         GetComponentInChildren<SpriteRenderer>().color = skinColor;
+        Runner.SetPlayerObject(Object.InputAuthority, Object);
     }
-    
+
+    public override void FixedUpdateNetwork()
+    {
+        GameManager.Instance.CheckCollisionWithBounds(this);
+    }
+
+    public void ReciveDamage()
+    {
+        Debug.Log($"[Damage MSG] {Nickname} recibio daño");
+    }
     [Rpc(RpcSources.InputAuthority,RpcTargets.StateAuthority)]
     void RPC_SetNickname(string newNickName)
     {
@@ -50,6 +66,22 @@ public class NetworkPlayer : NetworkBehaviour
         return GetComponent<CharacterInputsHandler>();
     }
 
+    public void PlayerLeft(PlayerRef player) {
+        if (Object.HasStateAuthority) 
+        {
+            if (Runner.TryGetPlayerObject(player,out NetworkObject playerLeftNetwork))
+            {
+                if (playerLeftNetwork)
+                {
+                    Debug.Log($"[MSG] {Nickname} salio de la partida.");
+                }
+            }
+        }
+        if (player == Object.InputAuthority)
+        {
+            Runner.Despawn(Object);
+        }
+    }
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         OnLeft();

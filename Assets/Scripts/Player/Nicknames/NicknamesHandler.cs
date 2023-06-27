@@ -31,7 +31,7 @@ public class NicknamesHandler : MonoBehaviour
     {
         foreach (var nickname in _allNicknames)
         {
-            //nickname.UpdatePosition();
+            nickname.UpdatePosition();
         }
     }
 }
