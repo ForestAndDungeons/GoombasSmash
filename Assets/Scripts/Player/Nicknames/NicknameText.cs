@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class NicknameText : MonoBehaviour
 {
-    const float OFFSET_POSITION_Y = 2.5f;
+    const float OFFSET_POSITION_Y = 1f;
     Transform _player;
     Text _myName;
     public NicknameText SetPlayer(NetworkPlayer player)

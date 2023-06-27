@@ -7,6 +7,7 @@ public class MainMenuHandler : MonoBehaviour
 {
     [SerializeField] NetworkRunnerHandler _networkRunner;
 
+
     [Header("Panel")]
     [SerializeField] GameObject _joinLobbyPanel;
     [SerializeField] GameObject _statusPanel;
@@ -21,11 +22,16 @@ public class MainMenuHandler : MonoBehaviour
 
     [Header("Text")]
     [SerializeField] Text _statusText;
+    [SerializeField] InputField _inputPlayerName; 
 
     [Header("InputField")]
     [SerializeField] InputField _inputFieldNameLobby;
     void Start()
     {
+        if (PlayerPrefs.HasKey("PlayerNickname"))
+        {
+            _inputPlayerName.text = PlayerPrefs.GetString("PlayerNickname");
+        }
         _joinLobbyBTN.onClick.AddListener(BTN_JoinLobby);
         _openCreateLobbyBTN.onClick.AddListener(BTN_HostPanel);
         _createLobbyBTN.onClick.AddListener(BTN_CreateLobby);
@@ -38,6 +44,9 @@ public class MainMenuHandler : MonoBehaviour
     }
     void BTN_JoinLobby()
     {
+
+        PlayerPrefs.SetString("PlayerNickname", _inputPlayerName.text);
+        PlayerPrefs.Save();
         _networkRunner.JoinLobby();
         _joinLobbyPanel.SetActive(false);
         _statusPanel.SetActive(true);
