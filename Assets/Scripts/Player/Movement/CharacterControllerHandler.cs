@@ -4,21 +4,24 @@ using UnityEngine;
 using Fusion;
 
 [RequireComponent(typeof(NetworkCharacterControllerCustom))]
+[RequireComponent(typeof(NetworkMecanimAnimator))]
 public class CharacterControllerHandler : NetworkBehaviour
 {
     NetworkCharacterControllerCustom _characterController;
+    NetworkMecanimAnimator _animator;
     bool canDoubleJump = false;
-    [Header("Controller")]
-    [SerializeField] GameObject _shield;
+    /*[Header("Controller")]
+    [SerializeField] GameObject _shield;*/
     [Header("View")]
     [SerializeField] float _view;
 
-    float _holdTimer = 0f;
-    private float _holdTimeThreshold = 0.5f;
+    /*float _holdTimer = 0f;
+    private float _holdTimeThreshold = 0.5f;*/
     private void Awake()
     {
         _characterController = GetComponent<NetworkCharacterControllerCustom>();
-
+        _animator = GetComponent<NetworkMecanimAnimator>();
+        
     }
 
     public override void FixedUpdateNetwork()
@@ -47,11 +50,11 @@ public class CharacterControllerHandler : NetworkBehaviour
                 _holdTimer = 0f;
             }
         }*/
-       if (input.isShield)
+       /*if (input.isShield)
         {
             _shield.gameObject.SetActive(true);
         }
-        else { _shield.gameObject.SetActive(false); }
+        else { _shield.gameObject.SetActive(false); }*/
 
         if (input.isJumpPressed)
         {

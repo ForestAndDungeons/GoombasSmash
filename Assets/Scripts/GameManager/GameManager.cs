@@ -9,9 +9,9 @@ public class GameManager : NetworkBehaviour
     static GameManager _instance;
 
     [SerializeField] GameObject _warnigText;
-    [Header("Limit Bounds")]
-    [SerializeField] float _boundWidth;
-    [SerializeField] float _boundHeight;
+
+    [SerializeField] float _boundWidth; 
+    [SerializeField] float _boundHeight ;
     [SerializeField] Color _color;
     [Header("Hookeable Objects")]
     [SerializeField]List<GameObject> _hookeableList= new List<GameObject>();

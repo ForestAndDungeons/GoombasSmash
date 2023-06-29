@@ -14,6 +14,7 @@ public class NetworkCharacterControllerCustom : NetworkTransform {
   public float braking       = 10.0f;
   public float maxSpeed      = 2.0f;
   public float rotationSpeed = 15.0f;
+  public float knockbackSpeed = 0.2f;
  
 
   [Networked]
@@ -128,6 +129,17 @@ public class NetworkCharacterControllerCustom : NetworkTransform {
     public virtual void TP(Transform target)
     {
         transform.position = target.position;
+    }
+
+    public virtual void KnockBack(float damagedPorcent,Vector3 enemyPosition)
+    {
+        
+        Debug.Log($"{enemyPosition}");
+        Vector3 dirKnockBack = transform.position - enemyPosition;
+        Vector3 knockBackPosition = transform.position + (dirKnockBack.normalized * damagedPorcent);
+        Debug.Log($"KnockbackPosition:  {knockBackPosition}");
+        transform.position = knockBackPosition;
+        Debug.Log($"porctent Damage:  {damagedPorcent}");
     }
   
 }

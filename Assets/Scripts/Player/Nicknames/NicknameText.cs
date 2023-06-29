@@ -7,7 +7,7 @@ public class NicknameText : MonoBehaviour
 {
     const float OFFSET_POSITION_Y = 1f;
     Transform _player;
-    Text _myName;
+    public Text _myName;
     public NicknameText SetPlayer(NetworkPlayer player)
     {
         _myName = GetComponent<Text>();

@@ -18,7 +18,7 @@ public class NetworkPlayer : NetworkBehaviour
         
         _myNickName = NicknamesHandler.Instance.AddNickname(this);
         var pos = GetComponent<Transform>().position;
-        Debug.Log(pos);
+     
 
         Color skinColor = Color.white;
         if (Object.HasInputAuthority)
