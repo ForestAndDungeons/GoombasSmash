@@ -8,6 +8,7 @@ public class CharacterInputsHandler : MonoBehaviour
     bool _isJumpPressed;
     bool _iscanHook;
     bool _isShield;
+    bool _isAttack;
 
 
     NetworkInputData _inputData;
@@ -31,6 +32,10 @@ public class CharacterInputsHandler : MonoBehaviour
         {
             _isShield = true;
         }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            _isAttack = true;
+        }
     }
 
     public NetworkInputData GetInputs()
@@ -39,6 +44,8 @@ public class CharacterInputsHandler : MonoBehaviour
         _inputData.isJumpPressed = _isJumpPressed;
         _inputData.isCanHook = _iscanHook;
         _inputData.isShield = _isShield;
+        _inputData.isAttack = _isAttack;
+        _isAttack = false;
         _isJumpPressed = false;
         _iscanHook = false;
         _isShield = false;

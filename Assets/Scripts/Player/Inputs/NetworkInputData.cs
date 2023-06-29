@@ -9,4 +9,5 @@ public struct NetworkInputData : INetworkInput
     public NetworkBool isJumpPressed;
     public NetworkBool isCanHook;
     public NetworkBool isShield;
+    public NetworkBool isAttack;
 }
