@@ -15,6 +15,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Color _color;
     [Header("Hookeable Objects")]
     [SerializeField]List<GameObject> _hookeableList= new List<GameObject>();
+    private bool outOfBoundsCalled = false;
     public override void Spawned()
     {
         if (Instance == null)
@@ -43,15 +44,23 @@ public class GameManager : NetworkBehaviour
         return objectPosition;
     }
 
-    public void CheckCollisionWithBounds(NetworkPlayer player)
+    public void CheckCollisionWithBounds(CharacterControllerHandler player)
     {
         var playerPosition = ApplyBounds(player.transform.position);
         if (player.transform.position != playerPosition)
         {
-            _warnigText.SetActive(true);
-            player.ReciveDamage();
+            if (!outOfBoundsCalled)
+            {
+                player.OutOfTheBounds();
+                outOfBoundsCalled = true;
+            }
+            
+            //warnigText.SetActive(true);
         }
-        else { _warnigText.SetActive(false); }
+        else {
+            outOfBoundsCalled = false;
+            _warnigText.SetActive(false); 
+        }
 
         
     }

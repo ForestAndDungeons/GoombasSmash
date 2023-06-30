@@ -38,16 +38,7 @@ public class NetworkPlayer : NetworkBehaviour
         GetComponentInChildren<SpriteRenderer>().color = skinColor;
         Runner.SetPlayerObject(Object.InputAuthority, Object);
     }
-
-    public override void FixedUpdateNetwork()
-    {
-        GameManager.Instance.CheckCollisionWithBounds(this);
-    }
-
-    public void ReciveDamage()
-    {
-        Debug.Log($"[Damage MSG] {Nickname} recibio daño");
-    }
+    public NetworkString<_16> GetNickname() { return Nickname; } 
     [Rpc(RpcSources.InputAuthority,RpcTargets.StateAuthority)]
     void RPC_SetNickname(string newNickName)
     {
