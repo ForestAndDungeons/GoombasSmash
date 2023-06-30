@@ -91,40 +91,60 @@ public class NetworkCharacterControllerCustom : NetworkTransform {
     /// Basic implementation of a character controller's movement function based on an intended direction.
     /// <param name="direction">Intended movement direction, subject to movement query, acceleration and max speed values.</param>
     /// </summary>
-    public virtual void Move(Vector3 direction) {
-    var deltaTime    = Runner.DeltaTime;
-    var previousPos  = transform.position;
-    var moveVelocity = Velocity;
-    
-    
-    direction = direction.normalized;
     
 
-    if (IsGrounded && moveVelocity.y < 0) {
-      moveVelocity.y = 0f;
+    public virtual void Move(Vector3 direction)
+    {
+        var deltaTime = Runner.DeltaTime;
+        var previousPos = transform.position;
+        var moveVelocity = Velocity;
+        var hasChangedDirection = false;
+
+        direction = direction.normalized;
+
+        if (IsGrounded && moveVelocity.y < 0)
+        {
+            moveVelocity.y = 0f;
+        }
+
+        moveVelocity.y += gravity * Runner.DeltaTime;
+
+        var horizontalVel = default(Vector3);
+        horizontalVel.x = moveVelocity.x;
+        horizontalVel.z = moveVelocity.z;
+
+        if (direction == default)
+        {
+            horizontalVel = Vector3.Lerp(horizontalVel, default, braking * deltaTime);
+        }
+        else
+        {
+            horizontalVel = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed);
+
+            if (direction.x > 0f && !hasChangedDirection)
+            {
+                transform.rotation = Quaternion.Euler(0f, 0f, 0f); // Gira 180 grados hacia la derecha
+                hasChangedDirection = true;
+            }
+            else if (direction.x < 0f && !hasChangedDirection)
+            {
+                transform.rotation = Quaternion.Euler(0f, -180f, 0f); // Gira 180 grados hacia la izquierda
+                hasChangedDirection = true;
+            }
+            else if (direction.x == 0f)
+            {
+                hasChangedDirection = false; // Reinicia el seguimiento del cambio de dirección
+            }
+        }
+
+        moveVelocity.x = horizontalVel.x;
+        moveVelocity.z = horizontalVel.z;
+
+        Controller.Move(moveVelocity * deltaTime);
+
+        Velocity = (transform.position - previousPos) * Runner.Simulation.Config.TickRate;
+        IsGrounded = Controller.isGrounded;
     }
-
-    moveVelocity.y += gravity * Runner.DeltaTime;
-
-    var horizontalVel = default(Vector3);
-    horizontalVel.x = moveVelocity.x;
-    horizontalVel.z = moveVelocity.z;
-
-    if (direction == default) {
-      horizontalVel = Vector3.Lerp(horizontalVel, default, braking * deltaTime);
-    } else {
-      horizontalVel      = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed);
-      transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), rotationSpeed * Runner.DeltaTime);
-    }
-
-    moveVelocity.x = horizontalVel.x;
-    moveVelocity.z = horizontalVel.z;
-
-    Controller.Move(moveVelocity * deltaTime);
-
-    Velocity   = (transform.position - previousPos) * Runner.Simulation.Config.TickRate;
-    IsGrounded = Controller.isGrounded;
-  }
 
     public virtual void TP(Transform target)
     {

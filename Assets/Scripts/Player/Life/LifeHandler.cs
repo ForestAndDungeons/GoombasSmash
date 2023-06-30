@@ -4,34 +4,56 @@ using UnityEngine;
 using Fusion;
 using System;
 [RequireComponent(typeof(NetworkCharacterControllerCustom))]
+[RequireComponent(typeof(Player))]
 public class LifeHandler : NetworkBehaviour
 {
-    [SerializeField] float _maxLife;
+    
     NetworkCharacterControllerCustom _characterController;
-    float _currentPorcentDamaged { get; set; }
-    //[Networked(OnChanged =nameof(OnDeadStateChange))]
-    bool _isDead { get; set; }
+    Player _player;
+    [Networked(OnChanged = nameof(OnCurrentPorcentDamageChanged))]
+    byte currentPorcentDamaged { get; set; }
 
-    public event Action<bool> OnDeadStateChange = delegate { };
-    public event Action onRespawn = delegate { };
+    const byte startingPor = 0;
+
+    //[Networked(OnChanged =nameof(OnDeadStateChange))]
+    public bool isDead { get; set; }
+
+    
     private void Awake()
     {
         _characterController = GetComponent<NetworkCharacterControllerCustom>();
+        _player = GetComponent<Player>();
     }
     void Start()
     {
-        _isDead = false;
+        currentPorcentDamaged = startingPor;
+        isDead = false;
     }
 
-    public void PorDamageAttacking(float dmg,Vector3 enemyTransform)
+    public void PorDamageAttacking(byte dmg,Vector3 enemyTransform)
     {
-        if (_isDead) return;
-        _currentPorcentDamaged += dmg;
-        _characterController.KnockBack(_currentPorcentDamaged, enemyTransform);
+        if (isDead) return;
+        if (!_player.isShield)
+        {
+            currentPorcentDamaged += dmg;
+            _characterController.KnockBack(currentPorcentDamaged, enemyTransform);
+        }
 
     }
-    public bool GetIsDead() { return _isDead; }
+    
 
+    static void OnCurrentPorcentDamageChanged(Changed<LifeHandler> changed)
+    {
+        Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.currentPorcentDamaged}");
 
+    }
+   /* public void OnDeadStateChange(Changed<LifeHandler> changed)
+    {
+        Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour._isDead}");
+    }*/
+    /*private void OnPorDmgUp()
+    {
+
+    }*/
 
 }
