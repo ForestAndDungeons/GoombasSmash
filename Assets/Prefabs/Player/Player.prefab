@@ -447,7 +447,7 @@ MonoBehaviour:
     _value: 0
     _inverse: 0
     _hash: -814817977
-  StateHashes: 000000002b1a167c7940695520e23b685928a8ce
+  StateHashes: 000000008a18fce4b9abd9d3
   TriggerHashes: 00000000
 --- !u!114 &4725964361222969795
 MonoBehaviour:
@@ -482,6 +482,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
+  _isDead: 0
 --- !u!1 &8410300792550015028
 GameObject:
   m_ObjectHideFlags: 0
