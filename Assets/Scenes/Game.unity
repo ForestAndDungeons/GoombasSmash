@@ -1887,7 +1887,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   _warnigText: {fileID: 1153564757}
-  _boundWidth: 10.24
+  _isSpawnplayer: 0
+  _playersList: []
+  _boundWidth: 12.31
   _boundHeight: 7.89
   _color: {r: 0.76972616, g: 0.8113208, b: 0.17986828, a: 1}
   _hookeableList:
