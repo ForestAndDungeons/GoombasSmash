@@ -28,7 +28,7 @@ public class CharacterInputsHandler : MonoBehaviour
         {
             _iscanHook = true;
         }
-        if (Input.GetKey(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             _isShield = true;
         }

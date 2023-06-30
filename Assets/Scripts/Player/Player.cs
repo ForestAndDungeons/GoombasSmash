@@ -9,64 +9,84 @@ public class Player : NetworkBehaviour
     [Header("Controller")]
     [SerializeField] GameObject _shield;
     [SerializeField] Transform _attackTransform;
-    float _holdTimer = 0f;
-    private float _holdTimeThreshold = 0.5f;
+    [SerializeField] Transform _headTransform;
+    [SerializeField] float _timeShield;
+    [Networked(OnChanged = nameof(OnIsShieldChanged))]
+    public bool isShield { get; set; }
+
+    [Header("HitBoxes")]
+    [SerializeField] Hitbox _headHitBox;
+    [SerializeField] Hitbox _spineHitBox;
 
     private void Awake()
     {
         _attackTransform.forward = _attackTransform.right;
+
+    }
+    private void Start()
+    {
+        isShield = false;
     }
     public override void FixedUpdateNetwork()
     {
-        Runner.LagCompensation.Raycast(origin: transform.position, transform.up * -1, 1, player: Object.InputAuthority, hit: out var hit);
-        if (hit.Hitbox !=null)
-        {
-            if (Object.HasStateAuthority)
-            {
-                Debug.Log($"{hit}  Se colisiono con  {hit.GameObject.name}");
-            }
-        }
+        /* Runner.LagCompensation.Raycast(origin: transform.position, (_headTransform.up * -1), 1, player: Object.InputAuthority, hit: out var hit);
+         if (hit.Hitbox !=null)
+         {
+             if (Object.HasStateAuthority)
+             {
+
+             }
+         }*/
 
         if (GetInput(out NetworkInputData input))
         {
             if (input.isShield)
             {
-                _holdTimer += Time.time;
-                Debug.Log($"HoldTimer {_holdTimer}");
-                if (!input.isShield && _holdTimer >= _holdTimeThreshold)
+                if (Object.HasStateAuthority)
                 {
-                    //_isShield = true;
-                    _shield.gameObject.SetActive(true);
-                    Debug.Log($"Activaste Escudo  {_holdTimer}");
+                    isShield = true;
+                    StartCoroutine(ShieldActivatedTime());
                 }
-                else
-                {
-                    _shield.gameObject.SetActive(false);
-                    _holdTimer = 0f;
-                }
+
             }
-            
+
             if (input.isAttack)
             {
-                Runner.LagCompensation.Raycast(origin: transform.position, _attackTransform.forward, 100, player: Object.InputAuthority, hit: out var hitinfo);
+                Runner.LagCompensation.Raycast(origin: transform.position, _attackTransform.forward, 1, player: Object.InputAuthority, hit: out var hitinfo);
 
-                if (hitinfo.Hitbox !=null)
+                if (hitinfo.Hitbox != null)
                 {
                     if (Object.HasStateAuthority)
                     {
-                        //var handlerHit = hitinfo.GameObject.GetComponent<LifeHandler>();
-                        //handlerHit.PorDamageAttacking(1);
-                        //Debug.Log($"Handlerhit:  {handlerHit},  handlerHit Gameobject name:  {handlerHit.gameObject.name}");
-                        var player = hitinfo.GameObject.GetComponentInParent<Player>();
-                        Debug.Log($"Mi posicion: {transform.position}, Posicion al que le pego: {player.transform.position}");
-                        var handlerHit = player.GetComponent<LifeHandler>();
-                        handlerHit.PorDamageAttacking(1,transform.position);
-                        Debug.Log($"{hitinfo} Se colisiono con  {player}");
+                        hitinfo.Hitbox.transform.root.GetComponent<LifeHandler>().PorDamageAttacking(1, transform.position);
+                        /* Debug.Log($"{hitinfo}  Se colisiono con  {hitinfo.GameObject.name}");
+                         var player = hitinfo.GameObject.GetComponentInParent<Player>();
+                         Debug.Log($"Mi posicion: {transform.position}, Posicion al que le pego: {player.transform.position}");
+                         var handlerHit = player.GetComponent<LifeHandler>();
+                         handlerHit.PorDamageAttacking(1, transform.position);
+                         Debug.Log($"{hitinfo} Se colisiono con el player  {player}");*/
+
                     }
                 }
             }
         }
+        IEnumerator ShieldActivatedTime()
+        {
+            yield return new WaitForSeconds(_timeShield);
+            isShield = false;
+        }
     }
 
-   
+    static void OnIsShieldChanged(Changed<Player> changed)
+    {
+        Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isShield}");
+        changed.Behaviour.ShieldImage();
+    }
+
+    public void ShieldImage()
+    {
+        if (isShield) _shield.SetActive(true);
+        else _shield.SetActive(false);
+    }
+    
 }
