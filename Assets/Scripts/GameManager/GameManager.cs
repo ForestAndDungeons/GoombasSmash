@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Fusion;
 
 public class GameManager : NetworkBehaviour
@@ -9,7 +10,12 @@ public class GameManager : NetworkBehaviour
     static GameManager _instance;
 
     [SerializeField] GameObject _warnigText;
+    [Networked(OnChanged = nameof(ChangeListPlayers))]
+    public bool isSpawnplayer { get; set; }
 
+    /*[Networked(OnChanged = nameof(OnWinText))]
+    NetworkString<_16> WinText{ get; set; }*/
+    [SerializeField] List<GameObject> _playersList = new List<GameObject>();
     [SerializeField] float _boundWidth; 
     [SerializeField] float _boundHeight ;
     [SerializeField] Color _color;
@@ -28,6 +34,7 @@ public class GameManager : NetworkBehaviour
 
         
     }
+
     public List<GameObject> GetAllHookeableList() { return _hookeableList; }
     public Vector3 ApplyBounds(Vector3 objectPosition)
     {
@@ -59,11 +66,71 @@ public class GameManager : NetworkBehaviour
         }
         else {
             outOfBoundsCalled = false;
-            _warnigText.SetActive(false); 
+            //_warnigText.SetActive(false); 
         }
 
         
     }
+
+
+    static void ChangeListPlayers(Changed<GameManager> changed)
+    {
+        Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isSpawnplayer}");
+
+    }
+
+
+    public void NewPlayerSpawn(GameObject player)
+    {
+        _playersList.Add(player);
+    }
+
+    public void RemovePlayerSpawn(GameObject player)
+    {
+        _playersList.Remove(player);
+       if (_playersList.Count <= 1)
+        {
+            foreach (var pj in _playersList)
+            {
+                if (Object.HasInputAuthority)
+                {
+                    NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
+                    Debug.Log($"El jugador {name.GetNickname()} Gano!!!");
+                   // RPC_SetWinMessage($"El jugador {name.GetNickname()} Gano!!!".ToString());
+                }
+            }
+               /*NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
+                Text winTex = _warnigText.GetComponent<Text>();
+                winTex.text = $"El jugador {name.GetNickname()} Gano!!!";
+                _warnigText.SetActive(true);*/
+
+        }
+    }
+   /* public static void OnWinText(Changed<GameManager> changed)
+    {
+        changed.Behaviour.UpdateWinText(changed.Behaviour.WinText.ToString());
+    }
+    void UpdateWinText(string newWinMSG)
+    {
+        Text winTex = _warnigText.GetComponent<Text>();
+        winTex.text = newWinMSG;
+        _warnigText.SetActive(true);
+    }
+
+    [Rpc(RpcSources.InputAuthority,RpcTargets.StateAuthority)]
+    public void RPC_SetWinMessage(string msg)
+    {
+        WinText = msg;
+        /*foreach (var pj in _playersList)
+        {
+            NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
+            WinText = $"El jugador {name.GetNickname()} Gano!!!";
+        }
+        // Text winTex = _warnigText.GetComponent<Text>();
+        // winTex.text = $"El jugador {name.GetNickname()} Gano!!!";
+        // _warnigText.SetActive(true);
+    }*/
+
     void OnDrawGizmos()
     {
         Gizmos.color = _color;

@@ -4,8 +4,10 @@ using UnityEngine;
 using Fusion;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(NetworkMecanimAnimator))]
 public class Player : NetworkBehaviour
 {
+    NetworkMecanimAnimator _netAnimator;
     [Header("Controller")]
     [SerializeField] GameObject _shield;
     [SerializeField] Transform _attackTransform;
@@ -21,7 +23,7 @@ public class Player : NetworkBehaviour
     private void Awake()
     {
         _attackTransform.forward = _attackTransform.right;
-
+        _netAnimator = GetComponent<NetworkMecanimAnimator>();
     }
     private void Start()
     {
@@ -52,6 +54,7 @@ public class Player : NetworkBehaviour
 
             if (input.isAttack)
             {
+                _netAnimator.Animator.SetTrigger("isAttack");
                 Runner.LagCompensation.Raycast(origin: transform.position, _attackTransform.forward, 1, player: Object.InputAuthority, hit: out var hitinfo);
 
                 if (hitinfo.Hitbox != null)

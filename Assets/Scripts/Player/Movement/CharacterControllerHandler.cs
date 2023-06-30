@@ -35,6 +35,8 @@ public class CharacterControllerHandler : NetworkBehaviour
                 {
                     Runner.Disconnect(Object.InputAuthority);
                 }
+                GameManager.Instance.RemovePlayerSpawn(this.gameObject);
+
                 Runner.Despawn(Object);
                 return;
             }
@@ -60,12 +62,14 @@ public class CharacterControllerHandler : NetworkBehaviour
         {
             if (_characterController.IsGrounded)
             {
+                _animator.Animator.SetTrigger("isJump");
                 _characterController.Jump();
                 canDoubleJump = true;
             }
             else if (canDoubleJump)
             {
                 _characterController.DoubleJump();
+                _animator.Animator.SetTrigger("isJump");
                 canDoubleJump = false;
             }
 

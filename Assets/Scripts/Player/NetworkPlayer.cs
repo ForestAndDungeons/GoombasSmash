@@ -15,7 +15,7 @@ public class NetworkPlayer : NetworkBehaviour
     public event Action OnLeft = delegate { };
     public override void Spawned()
     {
-        
+        GameManager.Instance.NewPlayerSpawn(this.gameObject);
         _myNickName = NicknamesHandler.Instance.AddNickname(this);
         var pos = GetComponent<Transform>().position;
      
