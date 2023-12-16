@@ -28,9 +28,12 @@ public class CharacterInputsHandler : MonoBehaviour
         {
             _iscanHook = true;
         }
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (!GameManager.Instance.isWaitingPlayers)
         {
-            _isShield = true;
+            if (Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                _isShield = true;
+            }
         }
         if (Input.GetKeyDown(KeyCode.E))
         {

@@ -17,7 +17,7 @@ public class ItemSessionInfo : MonoBehaviour
     {
         _sessionInfo = session;
         _sessionNameText.text = _sessionInfo.Name;
-        _playerCountText.text = $"{_sessionInfo.PlayerCount}/{_sessionInfo.MaxPlayers}";
+        _playerCountText.text = $"{_sessionInfo.PlayerCount}/2";
         _joinBTN.enabled = _sessionInfo.PlayerCount < _sessionInfo.MaxPlayers;
     }
 
