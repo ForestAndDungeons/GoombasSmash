@@ -15,6 +15,7 @@ public class CharacterControllerHandler : NetworkBehaviour
     [Header("View")]
     [SerializeField] float _view;
     bool isRespawnReq = false;
+    public bool playerIsReady;
 
     private void Awake()
     {
@@ -26,72 +27,96 @@ public class CharacterControllerHandler : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-
-        if (Object.HasStateAuthority)
+        if (!GameManager.Instance.isPlayerWin)
         {
-            if (_lifeHandler.cantLifes<=0)
+            if (Object.HasStateAuthority)
             {
-                if (!Object.HasInputAuthority)
+                if (_lifeHandler.cantLifes <= 0)
                 {
-                    Runner.Disconnect(Object.InputAuthority);
+                    if (!Object.HasInputAuthority)
+                    {
+
+                        Runner.Disconnect(Object.InputAuthority);
+                        //Runner.Despawn(Object);
+                    }
+                    else
+                    {
+                        Runner.Shutdown(true, ShutdownReason.Ok, false);
+                    }
+                    //Runner.Despawn(Object);
+                    GameManager.Instance.RemovePlayerSpawn(this.gameObject);
+
+                    return;
                 }
-                GameManager.Instance.RemovePlayerSpawn(this.gameObject);
-
-                Runner.Despawn(Object);
-                return;
-            }
-            if (isRespawnReq)
-            {
-                Respawn();
-                return;
-            }
-            if (_lifeHandler.isDead) return;
-            GameManager.Instance.CheckCollisionWithBounds(this);
-        }
-
-
-        if (GetInput(out NetworkInputData input))
-        {
-
-            Vector3 moveDir = Vector3.right * input.movementInput;
-
-            _characterController.Move(moveDir);
-        }
-
-        if (input.isJumpPressed)
-        {
-            if (_characterController.IsGrounded)
-            {
-                _animator.Animator.SetTrigger("isJump");
-                _characterController.Jump();
-                canDoubleJump = true;
-            }
-            else if (canDoubleJump)
-            {
-                _characterController.DoubleJump();
-                _animator.Animator.SetTrigger("isJump");
-                canDoubleJump = false;
-            }
-
-        }
-        foreach (var tpItem in GameManager.Instance.GetAllHookeableList())
-        {
-            if (Vector3.Distance(transform.position, tpItem.transform.position) <= _view)
-            {
-                if (!_characterController.IsGrounded && input.isCanHook)
+                if (isRespawnReq)
                 {
-                    var childTransf = tpItem.GetComponentInChildren<Transform>();
-
-                    _characterController.TP(tpItem.transform);
-                    input.isCanHook = false;
-
+                    Respawn();
+                    return;
                 }
+                if (_lifeHandler.isDead) return;
+                GameManager.Instance.CheckCollisionWithBounds(this);
+            }
+        }
+        else
+        {
+            StartCoroutine(GoBackToMenu());
+            
+        }
+
+        if (!GameManager.Instance.isWaitingPlayers)
+        {
+            if (GetInput(out NetworkInputData input))
+            {
+
+                Vector3 moveDir = Vector3.right * input.movementInput;
+
+                _characterController.Move(moveDir);
             }
 
+            if (input.isJumpPressed)
+            {
+                if (_characterController.IsGrounded)
+                {
+                    _animator.Animator.SetTrigger("isJump");
+                    _characterController.Jump();
+                    canDoubleJump = true;
+                }
+                else if (canDoubleJump)
+                {
+                    _characterController.DoubleJump();
+                    _animator.Animator.SetTrigger("isJump");
+                    canDoubleJump = false;
+                }
+
+            }
+
+
+            foreach (var tpItem in GameManager.Instance.GetAllHookeableList())
+            {
+                if (Vector3.Distance(transform.position, tpItem.transform.position) <= _view)
+                {
+                    if (!_characterController.IsGrounded && input.isCanHook)
+                    {
+                        var childTransf = tpItem.GetComponentInChildren<Transform>();
+
+                        _characterController.TP(tpItem.transform);
+                        input.isCanHook = false;
+
+                    }
+                }
+
+            }
         }
         _animator.Animator.SetFloat("Horizontal", Mathf.Abs(_characterController.Velocity.x));
     }
 
+    IEnumerator GoBackToMenu()
+    {
+        Debug.Log("Vuelvo al menu!!!");
+        yield return new WaitForSeconds(5f);
+        Runner.Shutdown(true, ShutdownReason.Ok, false);
+        //Runner.Disconnect(Object.InputAuthority);
+    }
     public void ReqRespawn()
     {
         isRespawnReq = true;
@@ -109,6 +134,8 @@ public class CharacterControllerHandler : NetworkBehaviour
         _lifeHandler.isDead = true;
         Debug.Log($"[Damage MSG] {playerNet.GetNickname()} recibio daño");
     }
+
+    
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;

@@ -13,6 +13,7 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     NetworkRunner _currNetRunner;
     public event Action OnJoinedLobby;
     public event Action<List<SessionInfo>> OnSessionListUpdate;
+    public event Action OnLobbyFull;
 
 
     public void JoinLobby()
@@ -45,7 +46,15 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
 
     public void JoinSession(SessionInfo sessionInfo)
     {
-        var clientTask = InitialSession(_currNetRunner, GameMode.Client, sessionInfo.Name, SceneManager.GetActiveScene().buildIndex);
+        if (sessionInfo.PlayerCount <= 1)
+        {
+            var clientTask = InitialSession(_currNetRunner, GameMode.Client, sessionInfo.Name, SceneManager.GetActiveScene().buildIndex);
+        }
+        else {
+            OnLobbyFull.Invoke();
+            Debug.Log("[IMPORTANTE] Sala Llena");
+        }
+        
     }
 
     async Task InitialSession(NetworkRunner runner, GameMode gameMode, string sessionName, SceneRef scene)
@@ -75,6 +84,17 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
 
     }
 
+    public void OnDisconnectedFromServer(NetworkRunner runner)
+    {
+        Debug.Log("Desconectado");
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
+    {
+        Debug.Log("Shutdown");
+        SceneManager.LoadScene("MainMenu");
+    }
     #region Unused Callbacks
 
     public void OnConnectedToServer(NetworkRunner runner)
@@ -97,10 +117,6 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
         
     }
 
-    public void OnDisconnectedFromServer(NetworkRunner runner)
-    {
-        
-    }
 
     public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken)
     {
@@ -138,10 +154,6 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     }
 
     public void OnSceneLoadStart(NetworkRunner runner)
-    {
-        
-    }
-    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
         
     }

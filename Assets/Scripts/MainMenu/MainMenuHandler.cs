@@ -14,6 +14,7 @@ public class MainMenuHandler : MonoBehaviour
     //[SerializeField] GameObject _browserPanel;
     [SerializeField] SessionListHandler _sessionListH;
     [SerializeField] GameObject _hostPanel;
+    [SerializeField] GameObject _fullLobby;
 
     [Header("Buttons")]
     [SerializeField] Button _joinLobbyBTN;
@@ -41,10 +42,14 @@ public class MainMenuHandler : MonoBehaviour
             //_browserPanel.SetActive(true);
             _sessionListH.gameObject.SetActive(true);
         };
+        _networkRunner.OnLobbyFull += () => {
+            _fullLobby.SetActive(true);
+            StartCoroutine(FullLobbyCoroutine());
+        };
+
     }
     void BTN_JoinLobby()
     {
-
         PlayerPrefs.SetString("PlayerNickname", _inputPlayerName.text);
         PlayerPrefs.Save();
         _networkRunner.JoinLobby();
@@ -63,5 +68,11 @@ public class MainMenuHandler : MonoBehaviour
     void BTN_CreateLobby()
     {
         _networkRunner.CreateSession(_inputFieldNameLobby.text, "Game");
+    }
+
+    IEnumerator FullLobbyCoroutine()
+    {
+        yield return new WaitForSeconds(2);
+        _fullLobby.SetActive(false);
     }
 }

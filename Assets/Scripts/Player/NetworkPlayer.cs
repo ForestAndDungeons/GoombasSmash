@@ -5,7 +5,7 @@ using Fusion;
 using System;
 
 [RequireComponent(typeof(CharacterInputsHandler))]
-public class NetworkPlayer : NetworkBehaviour
+public class NetworkPlayer : NetworkBehaviour,IPlayerLeft
 {
     
     public static NetworkPlayer local { get; private set; }
@@ -13,6 +13,8 @@ public class NetworkPlayer : NetworkBehaviour
     [Networked(OnChanged = nameof(OnNicknameChanged))]
     NetworkString<_16> Nickname { get; set; }
     public event Action OnLeft = delegate { };
+
+
     public override void Spawned()
     {
         GameManager.Instance.NewPlayerSpawn(this.gameObject);
@@ -25,7 +27,7 @@ public class NetworkPlayer : NetworkBehaviour
         {
             local = this;
 
-            skinColor = Color.blue;
+            skinColor = Color.white;
 
             RPC_SetNickname(PlayerPrefs.GetString("PlayerNickname"));
 
@@ -33,6 +35,7 @@ public class NetworkPlayer : NetworkBehaviour
         else
         {
             skinColor = Color.red;
+            skinColor.a = 0.8f;
             //pos = GameManager.Instance.secondPlayerSpawn.position;
         }
         GetComponentInChildren<SpriteRenderer>().color = skinColor;
@@ -62,9 +65,11 @@ public class NetworkPlayer : NetworkBehaviour
         {
             if (Runner.TryGetPlayerObject(player,out NetworkObject playerLeftNetwork))
             {
-                if (playerLeftNetwork)
+                if (playerLeftNetwork== Object)
                 {
                     Debug.Log($"[MSG] {Nickname} salio de la partida.");
+                    GameManager.Instance.RemovePlayerSpawn(this.gameObject);
+                    OnLeft();
                 }
             }
         }

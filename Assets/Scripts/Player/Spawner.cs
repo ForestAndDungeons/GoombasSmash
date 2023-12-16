@@ -14,7 +14,18 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         if (runner.IsServer)
         {
             Debug.Log("Un jugador se unio al server");
-            runner.Spawn(_networkPlayerPref,Utils.GetRandomSpawn(),Quaternion.identity,player);
+
+            Vector3 spawnPosition = Utils.GetRandomSpawn();
+            //runner.Spawn(_networkPlayerPref,Utils.GetRandomSpawn(),Quaternion.identity,player);
+            if (runner.SessionInfo.MaxPlayers - player.PlayerId == 1)
+            {
+                spawnPosition = new Vector3(3, 0.5f, 0);
+            }
+            else
+            {
+                spawnPosition = new Vector3(-3, 0.5f, 0);
+            }
+            runner.Spawn(_networkPlayerPref, spawnPosition, Quaternion.identity, player);
         }
         else
         {

@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Fusion;
+using System.Linq;
 
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get { return _instance; } }
     static GameManager _instance;
 
-    [SerializeField] GameObject _warnigText;
+    [SerializeField] Text _winningText;
+    [Networked(OnChanged = nameof(IsPlayerWinChanged))]
+    public bool isPlayerWin { get; set; }
     [Networked(OnChanged = nameof(ChangeListPlayers))]
     public bool isSpawnplayer { get; set; }
-
+    public bool isWaitingPlayers = true;
+    public GameObject buttonGoToMenu;
+    
     /*[Networked(OnChanged = nameof(OnWinText))]
     NetworkString<_16> WinText{ get; set; }*/
     [SerializeField] List<GameObject> _playersList = new List<GameObject>();
@@ -31,11 +36,10 @@ public class GameManager : NetworkBehaviour
         }
         else { Destroy(this.gameObject);
         } 
-
         
     }
-
-    public List<GameObject> GetAllHookeableList() { return _hookeableList; }
+    
+        public List<GameObject> GetAllHookeableList() { return _hookeableList; }
     public Vector3 ApplyBounds(Vector3 objectPosition)
     {
         if (objectPosition.x > _boundWidth)
@@ -72,14 +76,38 @@ public class GameManager : NetworkBehaviour
         
     }
 
-
+    static void IsPlayerWinChanged(Changed<GameManager> changed)
+    {
+        changed.Behaviour.IsPlayerWinChanged();
+    }
     static void ChangeListPlayers(Changed<GameManager> changed)
     {
         Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isSpawnplayer}");
 
     }
 
+    private void IsPlayerWinChanged()
+    {
+        if (isPlayerWin)
+        {
+            
+            // NetworkPlayer name = _playersList[0].GetComponent<NetworkPlayer>();
+            // RPC_SetWinningText(name);
+            //_winningText.text = $"{name.GetNickname()} Gano la partida";
+            _winningText.text = $"GANASTE!";
+            //buttonGoToMenu.SetActive(true);
+        }
+        else {
+            _winningText.text = "";
+           // buttonGoToMenu.SetActive(false);
+        }
+    }
 
+    /*[Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_SetWinningText(NetworkPlayer name)
+    {
+        _winningText.text = $"{name.GetNickname()} Gano la partida";
+    }*/
     public void NewPlayerSpawn(GameObject player)
     {
         _playersList.Add(player);
@@ -88,48 +116,24 @@ public class GameManager : NetworkBehaviour
     public void RemovePlayerSpawn(GameObject player)
     {
         _playersList.Remove(player);
-       if (_playersList.Count <= 1)
+        if (_playersList.Count <= 1)
         {
-            foreach (var pj in _playersList)
+            isPlayerWin = true;
+            /*foreach (var pj in _playersList)
             {
                 if (Object.HasInputAuthority)
                 {
-                    NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
+                    isPlayerWin = true;
+                   NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
                     Debug.Log($"El jugador {name.GetNickname()} Gano!!!");
-                   // RPC_SetWinMessage($"El jugador {name.GetNickname()} Gano!!!".ToString());
                 }
             }
-               /*NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
-                Text winTex = _warnigText.GetComponent<Text>();
-                winTex.text = $"El jugador {name.GetNickname()} Gano!!!";
-                _warnigText.SetActive(true);*/
-
+            */
         }
     }
-   /* public static void OnWinText(Changed<GameManager> changed)
-    {
-        changed.Behaviour.UpdateWinText(changed.Behaviour.WinText.ToString());
-    }
-    void UpdateWinText(string newWinMSG)
-    {
-        Text winTex = _warnigText.GetComponent<Text>();
-        winTex.text = newWinMSG;
-        _warnigText.SetActive(true);
-    }
 
-    [Rpc(RpcSources.InputAuthority,RpcTargets.StateAuthority)]
-    public void RPC_SetWinMessage(string msg)
-    {
-        WinText = msg;
-        /*foreach (var pj in _playersList)
-        {
-            NetworkPlayer name = pj.GetComponent<NetworkPlayer>();
-            WinText = $"El jugador {name.GetNickname()} Gano!!!";
-        }
-        // Text winTex = _warnigText.GetComponent<Text>();
-        // winTex.text = $"El jugador {name.GetNickname()} Gano!!!";
-        // _warnigText.SetActive(true);
-    }*/
+    public List<GameObject>  GetPlayerList() { return _playersList; }
+
 
     void OnDrawGizmos()
     {
