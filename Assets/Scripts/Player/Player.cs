@@ -8,6 +8,9 @@ using UnityEngine.UI;
 public class Player : NetworkBehaviour
 {
     NetworkMecanimAnimator _netAnimator;
+    CharacterControllerHandler _charControllerHandler;
+    [Header("Clip")]
+    [SerializeField] AudioClip _shieldClip;
     [Header("Controller")]
     [SerializeField] GameObject _shield;
     [SerializeField] Transform _attackTransform;
@@ -24,6 +27,7 @@ public class Player : NetworkBehaviour
     {
         _attackTransform.forward = _attackTransform.right;
         _netAnimator = GetComponent<NetworkMecanimAnimator>();
+        _charControllerHandler = GetComponent<CharacterControllerHandler>();
     }
     private void Start()
     {
@@ -54,7 +58,7 @@ public class Player : NetworkBehaviour
 
             if (input.isAttack)
             {
-                _netAnimator.Animator.SetTrigger("isAttack");
+                _netAnimator.Animator.SetTrigger("isAttack");                
                 Runner.LagCompensation.Raycast(origin: transform.position, _attackTransform.forward, 1, player: Object.InputAuthority, hit: out var hitinfo);
 
                 if (hitinfo.Hitbox != null)
@@ -82,13 +86,18 @@ public class Player : NetworkBehaviour
 
     static void OnIsShieldChanged(Changed<Player> changed)
     {
-        Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isShield}");
+        //Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isShield}");
         changed.Behaviour.ShieldImage();
     }
 
     public void ShieldImage()
     {
-        if (isShield) _shield.SetActive(true);
+        if (isShield) {
+            //sonido Shield
+            _charControllerHandler.GetAudioSource().PlayOneShot(_shieldClip);
+            Debug.Log("Soinido shield");
+            _shield.SetActive(true);
+        }
         else _shield.SetActive(false);
     }
     

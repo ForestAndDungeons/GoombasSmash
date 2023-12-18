@@ -15,6 +15,11 @@ public class UIReadyHandler : NetworkBehaviour
     public GameObject readyGameobject;
     public GameObject levelGameObject;
     public GameObject readyObjects;
+    public GameObject cloudsLevel;
+    [Header("GetsReady")]
+    [SerializeField] AudioSource _audioSource;
+    [SerializeField] AudioClip _getsReady;
+    
 
     TickTimer countDownTickTimer = TickTimer.None;
     
@@ -47,6 +52,10 @@ public class UIReadyHandler : NetworkBehaviour
             countDown = (byte)countDownTickTimer.RemainingTime(Runner);
         }
         StartCoroutine(WaitASecondToCheckPlayerList());
+        if (GameManager.Instance.isPlayerWin)
+        {
+            _audioSource.Stop();
+        }
     }
 
     IEnumerator WaitASecondToAssignValues()
@@ -75,8 +84,7 @@ public class UIReadyHandler : NetworkBehaviour
         {
             if (isReady)
             {
-                countDownTickTimer = TickTimer.CreateFromSeconds(Runner,10);
-
+                countDownTickTimer = TickTimer.CreateFromSeconds(Runner,5);
             }
             else
             {
@@ -106,13 +114,21 @@ public class UIReadyHandler : NetworkBehaviour
         {
             readyObjects.SetActive(false);
             readyGameobject.SetActive(false);
+            cloudsLevel.SetActive(true);
             levelGameObject.SetActive(true);
             GameManager.Instance.isWaitingPlayers = false;
+            _audioSource.volume = 0.03f;
+            _audioSource.Play();
         }
     }
     void OnIsReadyChanged()
     {
-        Debug.Log(isReady);
+        if (isReady)
+        {
+            _audioSource.volume=0.5f;
+            _audioSource.PlayOneShot(_getsReady);
+            Debug.Log("GetsReady Sound");      
+        }
     }
     private void OnCountdownChanged()
     {
@@ -123,9 +139,9 @@ public class UIReadyHandler : NetworkBehaviour
         }
         else
         {
-            countDownText.text = $"La pelea comienza en {countDown}";
+            countDownText.text = $"La pelea comienza en {countDown}";  
         }
-                
+        
     }
 
 

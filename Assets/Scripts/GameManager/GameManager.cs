@@ -17,6 +17,9 @@ public class GameManager : NetworkBehaviour
     public bool isSpawnplayer { get; set; }
     public bool isWaitingPlayers = true;
     public GameObject buttonGoToMenu;
+    [Networked(OnChanged = nameof(IsHostDead))]
+    public bool isHostDead { get; set; }
+    public bool imTheHost;
     
     /*[Networked(OnChanged = nameof(OnWinText))]
     NetworkString<_16> WinText{ get; set; }*/
@@ -85,16 +88,38 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isSpawnplayer}");
 
     }
-
+    static void IsHostDead(Changed<GameManager> changed)
+    {
+        Debug.Log($"{Time.time} OnPorcentDamage value {changed.Behaviour.isHostDead}");
+    }
     private void IsPlayerWinChanged()
     {
         if (isPlayerWin)
         {
-            
+
             // NetworkPlayer name = _playersList[0].GetComponent<NetworkPlayer>();
             // RPC_SetWinningText(name);
             //_winningText.text = $"{name.GetNickname()} Gano la partida";
-            _winningText.text = $"GANASTE!";
+            //StartCoroutine(WaitToCheckPlayerList());
+            if (isHostDead)
+            {
+                if (!imTheHost)
+                {
+                    NetworkPlayer name = _playersList[1].GetComponent<NetworkPlayer>();
+                    _winningText.text = $"<color=cyan><b>{name.GetNickname()}</b></color> <i>Gano la partida</i>";
+                }
+                else
+                {
+                    NetworkPlayer name = _playersList[0].GetComponent<NetworkPlayer>();
+                    _winningText.text = $"<color=cyan><b>{name.GetNickname()}</b></color> <i>Gano la partida</i>";
+                }
+            }
+            else
+            {
+                NetworkPlayer name = _playersList[0].GetComponent<NetworkPlayer>();
+                _winningText.text = $"<color=cyan><b>{name.GetNickname()}</b></color> <i>Gano la partida</i>";
+            }
+            //_winningText.text = $"GANASTE!";
             //buttonGoToMenu.SetActive(true);
         }
         else {
@@ -102,6 +127,12 @@ public class GameManager : NetworkBehaviour
            // buttonGoToMenu.SetActive(false);
         }
     }
+
+    /*IEnumerator WaitToCheckPlayerList()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+    }*/
 
     /*[Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_SetWinningText(NetworkPlayer name)

@@ -16,6 +16,10 @@ public class MainMenuHandler : MonoBehaviour
     [SerializeField] GameObject _hostPanel;
     [SerializeField] GameObject _fullLobby;
 
+    [Header("Sounds")]
+    [SerializeField] AudioSource _audioSourse;
+    [SerializeField] AudioClip _buttonSound;
+
     [Header("Buttons")]
     [SerializeField] Button _joinLobbyBTN;
     [SerializeField] Button _openCreateLobbyBTN;
@@ -29,10 +33,12 @@ public class MainMenuHandler : MonoBehaviour
     [SerializeField] InputField _inputFieldNameLobby;
     void Start()
     {
-        if (PlayerPrefs.HasKey("PlayerNickname"))
-        {
-            _inputPlayerName.text = PlayerPrefs.GetString("PlayerNickname");
-        }
+        
+        /* if (PlayerPrefs.HasKey("PlayerNickname"))
+         {
+             _inputPlayerName.text = PlayerPrefs.GetString("PlayerNickname");
+         }*/
+        _inputPlayerName.text = "";
         _joinLobbyBTN.onClick.AddListener(BTN_JoinLobby);
         _openCreateLobbyBTN.onClick.AddListener(BTN_HostPanel);
         _createLobbyBTN.onClick.AddListener(BTN_CreateLobby);
@@ -50,6 +56,7 @@ public class MainMenuHandler : MonoBehaviour
     }
     void BTN_JoinLobby()
     {
+        _audioSourse.PlayOneShot(_buttonSound);
         PlayerPrefs.SetString("PlayerNickname", _inputPlayerName.text);
         PlayerPrefs.Save();
         _networkRunner.JoinLobby();
@@ -60,6 +67,7 @@ public class MainMenuHandler : MonoBehaviour
 
     void BTN_HostPanel()
     {
+        _audioSourse.PlayOneShot(_buttonSound);
         //_browserPanel.SetActive(false);
         _sessionListH.gameObject.SetActive(false);
         _hostPanel.SetActive(true);
@@ -67,9 +75,14 @@ public class MainMenuHandler : MonoBehaviour
 
     void BTN_CreateLobby()
     {
+        _audioSourse.PlayOneShot(_buttonSound);
         _networkRunner.CreateSession(_inputFieldNameLobby.text, "Game");
     }
 
+    public void OnchangeFullscreenMode()
+    {
+        Screen.fullScreen = !Screen.fullScreen;
+    }
     IEnumerator FullLobbyCoroutine()
     {
         yield return new WaitForSeconds(2);
