@@ -12,6 +12,8 @@ public class CharacterControllerHandler : NetworkBehaviour
     NetworkMecanimAnimator _animator;
     LifeHandler _lifeHandler;
     bool canDoubleJump = false;
+    [Header("Aduio")]
+    [SerializeField] AudioSource _audioSourse;
     [Header("View")]
     [SerializeField] float _view;
     bool isRespawnReq = false;
@@ -35,13 +37,19 @@ public class CharacterControllerHandler : NetworkBehaviour
                 {
                     if (!Object.HasInputAuthority)
                     {
-
-                        Runner.Disconnect(Object.InputAuthority);
+                        GameManager.Instance.isHostDead = false;
+                        Runner.Despawn(Object);
+                        StartCoroutine(WaitToDisconnectPlayer());
+                       // Runner.Disconnect(Object.InputAuthority);
                         //Runner.Despawn(Object);
                     }
                     else
                     {
-                        Runner.Shutdown(true, ShutdownReason.Ok, false);
+                        GameManager.Instance.isHostDead = true;
+                        GameManager.Instance.imTheHost = true;
+                        Runner.Despawn(Object);
+                        StartCoroutine(WaitToBackToMenuHost());
+                       // Runner.Shutdown(true, ShutdownReason.Ok, false);
                     }
                     //Runner.Despawn(Object);
                     GameManager.Instance.RemovePlayerSpawn(this.gameObject);
@@ -78,6 +86,7 @@ public class CharacterControllerHandler : NetworkBehaviour
                 if (_characterController.IsGrounded)
                 {
                     _animator.Animator.SetTrigger("isJump");
+
                     _characterController.Jump();
                     canDoubleJump = true;
                 }
@@ -98,7 +107,6 @@ public class CharacterControllerHandler : NetworkBehaviour
                     if (!_characterController.IsGrounded && input.isCanHook)
                     {
                         var childTransf = tpItem.GetComponentInChildren<Transform>();
-
                         _characterController.TP(tpItem.transform);
                         input.isCanHook = false;
 
@@ -110,13 +118,26 @@ public class CharacterControllerHandler : NetworkBehaviour
         _animator.Animator.SetFloat("Horizontal", Mathf.Abs(_characterController.Velocity.x));
     }
 
+    public AudioSource GetAudioSource() { return _audioSourse; }
+
+    IEnumerator WaitToDisconnectPlayer()
+    {
+        yield return new WaitForSeconds(3f);
+        Runner.Disconnect(Object.InputAuthority);
+    }
     IEnumerator GoBackToMenu()
     {
-        Debug.Log("Vuelvo al menu!!!");
+        
         yield return new WaitForSeconds(5f);
         Runner.Shutdown(true, ShutdownReason.Ok, false);
         //Runner.Disconnect(Object.InputAuthority);
     }
+    IEnumerator WaitToBackToMenuHost()
+    {
+        yield return new WaitForSeconds(5f);
+        Runner.Shutdown(true, ShutdownReason.Ok, false);
+    }
+
     public void ReqRespawn()
     {
         isRespawnReq = true;
@@ -131,11 +152,11 @@ public class CharacterControllerHandler : NetworkBehaviour
     {
         var playerNet = gameObject.GetComponent<NetworkPlayer>();
         StartCoroutine(_lifeHandler.SvReviveCo());
+        _lifeHandler.isExplosion = true;
         _lifeHandler.isDead = true;
         Debug.Log($"[Damage MSG] {playerNet.GetNickname()} recibio daño");
     }
 
-    
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;
